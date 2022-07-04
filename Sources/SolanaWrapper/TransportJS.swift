@@ -31,7 +31,7 @@ import JavaScriptCore
                 case .success(let response):
                     callback.call(withArguments: [response])
                 case .failure(let error):
-                    callback.call(withArguments: ["ERROR: \(error.localizedDescription)"])
+                    callback.call(withArguments: ["ERROR: \(error.description())"])
                 }
             }
         }
@@ -48,7 +48,7 @@ import JavaScriptCore
                 case .success(let response):
                     callback.call(withArguments: [response.UInt8Array()])
                 case .failure(let error):
-                    callback.call(withArguments: ["ERROR: \(error.localizedDescription)"])
+                    callback.call(withArguments: ["ERROR: \(error.description())"])
                 }
             }
         }
