@@ -30,7 +30,7 @@ public class SolanaWrapper {
         return jsContext
     }()
     
-    init() {
+    public init() {
         injectTransportJS()
     }
     
@@ -47,7 +47,7 @@ public class SolanaWrapper {
         )
     }
     
-    func getAppConfiguration(completion: @escaping ((String)->())) {
+    public func getAppConfiguration(completion: @escaping ((String)->())) {
         guard let module = jsContext.objectForKeyedSubscript("TransportModule") else { return }
         guard let transportModule = module.objectForKeyedSubscript("TransportBLEiOS") else { return }
         guard let transportInstance = transportModule.construct(withArguments: []) else { return }
