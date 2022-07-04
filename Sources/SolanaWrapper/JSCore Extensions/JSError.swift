@@ -17,8 +17,7 @@ import JavaScriptCore
     var fileName: String? { get }
     var lineNumber: Int { get }
     var columnNumber: Int { get }
-    //
-    //init(_ message: String?, _ fileName: String?, lineNumber: Int?)
+    
     init(_ message: String?, _ fileName: String?, lineNumber: JSValue?)
     func toSource() -> String
     func toString() -> String
@@ -63,8 +62,6 @@ public extension JSValue {
         if isInstance(of: JSError.self) { return true }
         let JSNativeError = context.objectForKeyedSubscript("Error")!
         guard JSNativeError.isObject else { return false }
-        //var jsException: JSValueRef? = nil
-        //return JSValueIsInstanceOfConstructor(context.jsGlobalContextRef, jsValueRef, JSNativeError.jsValueRef, &jsException)
         return JSValueIsInstanceOfConstructor(context.jsGlobalContextRef, jsValueRef, JSNativeError.jsValueRef, nil)
     }
     

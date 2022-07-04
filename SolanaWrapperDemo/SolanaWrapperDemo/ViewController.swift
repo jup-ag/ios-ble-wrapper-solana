@@ -13,6 +13,7 @@ class ViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
+        /// `create` connects automatically to the first discovered device so have your device ready before launching this demo
         BleTransport.shared.create {
             print("Device disconnected")
         } success: { connectedPeripheral in

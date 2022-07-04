@@ -9,17 +9,12 @@
 import Foundation
 import JavaScriptCore
 
-//public typealias FulfilledHandler = (Any?) -> Any?
-//public typealias RejectedHandler = (JSError?) -> Void
 public typealias FulfilledHandler = @convention(block) (Any?) -> Any?
 public typealias RejectedHandler = @convention(block) (JSError) -> Void
 
 // SPEC: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
 @objc public protocol PromiseJSProtocol: JSExport {
-    //init(_ resolver: JSValue)
-    //init(_ resolver: @convention(block) (@convention(block) @escaping (Any?) -> Void, @convention(block) @escaping (JSError) -> Void) -> Void)
     init(_ resolver: @convention(block) (@escaping (Any?) -> Void, @escaping (JSError) -> Void) -> Void)
-    //init(_ resolver: (@escaping (Any?) -> Void, @escaping (JSError) -> Void) -> Void)
     func then(_ onFulfilled: @escaping FulfilledHandler, _ onRejected: @escaping RejectedHandler) -> JSPromise
     func `catch`(_ onRejected: @escaping RejectedHandler) -> JSPromise
 }
@@ -28,9 +23,6 @@ public typealias RejectedHandler = @convention(block) (JSError) -> Void
     
     // inspired by Bluebird (http://bluebirdjs.com/docs/api-reference.html)
     public class func resolve(_ value: Any? = nil) -> JSPromise {
-        //return JSPromise({ (resolve, _) in
-        //    resolve(value)
-        //})
         return JSPromise({ (resolve, reject) in
             if let value = value as? JSPromise {
                 value.then(resolve, reject)
@@ -58,19 +50,9 @@ public typealias RejectedHandler = @convention(block) (JSError) -> Void
         return !isFulfilled && !isRejected
     }
     
-    //public required init(_ resolver: (@escaping FulfilledHandler, @escaping RejectedHandler) -> Void) {
-    //public required init(_ resolver: @convention(block) (@convention(block) @escaping (Any?) -> Void, @convention(block) @escaping (JSError) -> Void) -> Void) {
     public required init(_ resolver: @convention(block) (@escaping (Any?) -> Void, @escaping (JSError) -> Void) -> Void) {
-    //public required init(_ resolver: (@escaping (Any?) -> Void, @escaping (JSError) -> Void) -> Void) {
         super.init()
-        //resolver(
-        //    { [weak self] value in self?.resolve(value) },
-        //    { [weak self] error in self?.reject(error) }
-        //)
         resolver({ self.resolve($0) }, { self.reject($0) })
-        //let resolveFn: @convention(block) (Any?) -> Void = { self.resolve($0) }
-        //let rejectFn: @convention(block) (JSError) -> Void = { self.reject($0) }
-        //resolver(resolveFn, rejectFn)
     }
     
     internal var _fulfilledHandlers = [FulfilledHandler]()
@@ -95,7 +77,6 @@ public typealias RejectedHandler = @convention(block) (JSError) -> Void
         _fulfilledHandlers.forEach { fulfilledHandler in
             let _ = fulfilledHandler(value)
         }
-        //_fulfilledHandlers.forEach { let _ = $0(value) }
         
         _fulfilledHandlers.removeAll()
         _rejectedHandlers.removeAll()
@@ -110,7 +91,6 @@ public typealias RejectedHandler = @convention(block) (JSError) -> Void
         _rejectedHandlers.forEach { rejectedHandler in
             rejectedHandler(reason)
         }
-        //_rejectedHandlers.forEach { $0(reason) }
         
         _fulfilledHandlers.removeAll()
         _rejectedHandlers.removeAll()
@@ -150,17 +130,11 @@ public extension JSValue {
     var isPromise: Bool {
         guard isObject else { return false }
         if isInstance(of: JSPromise.self) { return true }
-        /*
-        let JSNativePromise = context.objectForKeyedSubscript("Promise")!
-        guard JSNativePromise.isObject else { return false }
-        //var jsException: JSValueRef? = nil
-        return JSValueIsInstanceOfConstructor(context.jsGlobalContextRef, jsValueRef, JSNativePromise.jsValueRef, nil/*&jsException*/)
-        */
+        
         return (forProperty("then").isFunction && forProperty("catch").isFunction)
     }
     
     func toPromise() -> JSPromise {
-        //guard isObject else { return nil }
         if isPromise {
             return toObjectOf(JSPromise.self) as! JSPromise
         }
@@ -173,10 +147,8 @@ public extension JSValue {
             return JSPromise.resolve(toString())
         case kJSTypeObject:
             return JSPromise.resolve(toObject())
-        //case kJSTypeUndefined:
-        //case kJSTypeNull:
         default:
-            return JSPromise.resolve(/*nil*/)
+            return JSPromise.resolve()
         }
     }
     

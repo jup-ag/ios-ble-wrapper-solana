@@ -11,15 +11,7 @@ import Foundation
 
 public extension JSValue {
     
-    //open func setObject(_ object: Any!, forKeyedSubscript key: String!) {
-    //    return self.setObject(object, forKeyedSubscript: key as (NSCopying & NSObjectProtocol))
-    //}
-    
     convenience init(_ value: Any!, in context: JSContext!) {
-        //guard let value = value else {
-        //    self.init(undefinedIn: context)
-        //    return
-        //}
         switch value {
         case let value as Bool:
             self.init(bool: value, in: context)
@@ -39,14 +31,10 @@ public extension JSValue {
             self.init(range: value, in: context)
         case let value as Error:
             self.init(newErrorFromMessage: value.localizedDescription, in: context)
-        //case let value as NSRegularExpression:
-        //    self.init(newRegularExpressionFromPattern: value.pattern, flags: ""/*value.options*/, in: context)
         case let value as NSObjectProtocol:
             self.init(object: value, in: context)
         default:
-            //self.init()
             self.init(undefinedIn: context)
-            //self.init(nullIn: context)
         }
     }
     
