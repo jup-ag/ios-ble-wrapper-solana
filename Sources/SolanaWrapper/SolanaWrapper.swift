@@ -14,7 +14,7 @@ public class SolanaWrapper {
         guard let jsContext = jsContext else { fatalError() }
         
         guard let
-                commonJSPath = Bundle.main.path(forResource: "bundle", ofType: "js") else {
+                commonJSPath = Bundle.module.path(forResource: "bundle", ofType: "js") else {
             print("Unable to read resource files.")
             fatalError()
         }
