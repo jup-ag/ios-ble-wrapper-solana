@@ -8,7 +8,7 @@
 import Foundation
 import JavaScriptCore
 
-class SolanaWrapper {
+public class SolanaWrapper {
     lazy var jsContext: JSContext = {
         let jsContext = JSContext()
         guard let jsContext = jsContext else { fatalError() }
