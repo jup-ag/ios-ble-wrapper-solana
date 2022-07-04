@@ -47,7 +47,7 @@ public class SolanaWrapper {
         )
     }
     
-    public func getAppConfiguration(completion: @escaping ((String)->())) {
+    public func getAppConfiguration(success: @escaping ((AppConfig)->()), failure: @escaping ((String)->())) {
         guard let module = jsContext.objectForKeyedSubscript("TransportModule") else { return }
         guard let transportModule = module.objectForKeyedSubscript("TransportBLEiOS") else { return }
         guard let transportInstance = transportModule.construct(withArguments: []) else { return }
@@ -55,14 +55,29 @@ public class SolanaWrapper {
         guard let solanaInstance = solanaModule.construct(withArguments: [transportInstance]) else { return }
         solanaInstance.invokeMethodAsync("getAppConfiguration", withArguments: [], completionHandler: { resolve, reject in
             if let resolve = resolve {
-                let resolvedString = "RESOLVED. Value: \(String(describing: resolve.toObject()))"
-                print(resolvedString)
-                completion(resolvedString)
+                if let dict = resolve.toDictionary() {
+                    guard let blindSigningEnabled = dict["blindSigningEnabled"] as? Bool else { print("Unexpected type returned"); return }
+                    guard let pubKeyDisplayModeInt = dict["pubKeyDisplayMode"] as? Int else { print("Unexpected type returned"); return }
+                    guard let version = dict["version"] as? String else { print("Unexpected type returned"); return }
+                    guard let pubKeyDisplayMode = PubKeyDisplayMode(rawValue: pubKeyDisplayModeInt) else { print("Unexpected type returned"); return }
+                    let appConfig = AppConfig(blindSigningEnabled: blindSigningEnabled, pubKeyDisplayMode: pubKeyDisplayMode, version: version)
+                    
+                    success(appConfig)
+                }
             } else if let reject = reject {
-                let rejectedString = "REJECTED. Value: \(reject)"
-                print(rejectedString)
-                completion(rejectedString)
+                failure("REJECTED. Value: \(reject)")
             }
         })
     }
+}
+
+enum PubKeyDisplayMode: Int {
+    case long = 0
+    case short = 1
+}
+
+public struct AppConfig {
+    let blindSigningEnabled: Bool
+    let pubKeyDisplayMode: PubKeyDisplayMode
+    let version: String
 }
