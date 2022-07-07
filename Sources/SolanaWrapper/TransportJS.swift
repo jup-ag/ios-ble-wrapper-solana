@@ -1,6 +1,5 @@
 //
 //  TransportJS.swift
-//  SolanaWrapper
 //
 //  Created by Dante Puglisi on 7/4/22.
 //

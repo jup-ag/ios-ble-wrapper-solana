@@ -1,14 +1,14 @@
 //
 //  SolanaWrapper.swift
-//  SolanaWrapper
 //
 //  Created by Dante Puglisi on 7/4/22.
 //
 
 import Foundation
 import JavaScriptCore
+import Base58Swift
 
-public class SolanaWrapper {
+public class SolanaWrapper: Wrapper {
     lazy var jsContext: JSContext = {
         let jsContext = JSContext()
         guard let jsContext = jsContext else { fatalError() }
@@ -30,8 +30,12 @@ public class SolanaWrapper {
         return jsContext
     }()
     
-    public init() {
+    var solanaInstance: JSValue?
+    
+    public override init() {
+        super.init()
         injectTransportJS()
+        loadInstance()
     }
     
     fileprivate func injectTransportJS() {
@@ -47,27 +51,50 @@ public class SolanaWrapper {
         )
     }
     
-    public func getAppConfiguration(success: @escaping ((AppConfig)->()), failure: @escaping ((String)->())) {
+    fileprivate func loadInstance() {
         guard let module = jsContext.objectForKeyedSubscript("TransportModule") else { return }
         guard let transportModule = module.objectForKeyedSubscript("TransportBLEiOS") else { return }
         guard let transportInstance = transportModule.construct(withArguments: []) else { return }
         guard let solanaModule = module.objectForKeyedSubscript("Solana") else { return }
-        guard let solanaInstance = solanaModule.construct(withArguments: [transportInstance]) else { return }
+        solanaInstance = solanaModule.construct(withArguments: [transportInstance])
+    }
+    
+    public func getAppConfiguration(success: @escaping ((AppConfig)->()), failure: @escaping ((String)->())) {
+        guard let solanaInstance = solanaInstance else { failure("Instance not initialized"); return }
         solanaInstance.invokeMethodAsync("getAppConfiguration", withArguments: [], completionHandler: { resolve, reject in
             if let resolve = resolve {
                 if let dict = resolve.toDictionary() {
-                    guard let blindSigningEnabled = dict["blindSigningEnabled"] as? Bool else { print("Unexpected type returned"); return }
-                    guard let pubKeyDisplayModeInt = dict["pubKeyDisplayMode"] as? Int else { print("Unexpected type returned"); return }
-                    guard let version = dict["version"] as? String else { print("Unexpected type returned"); return }
-                    guard let pubKeyDisplayMode = PubKeyDisplayMode(rawValue: pubKeyDisplayModeInt) else { print("Unexpected type returned"); return }
+                    guard let blindSigningEnabled = dict["blindSigningEnabled"] as? Bool else { failure("Resolved but couldn't parse"); return }
+                    guard let pubKeyDisplayModeInt = dict["pubKeyDisplayMode"] as? Int else { failure("Resolved but couldn't parse"); return }
+                    guard let version = dict["version"] as? String else { failure("Resolved but couldn't parse"); return }
+                    guard let pubKeyDisplayMode = PubKeyDisplayMode(rawValue: pubKeyDisplayModeInt) else { failure("Resolved but couldn't parse"); return }
                     let appConfig = AppConfig(blindSigningEnabled: blindSigningEnabled, pubKeyDisplayMode: pubKeyDisplayMode, version: version)
                     
                     success(appConfig)
+                } else {
+                    failure("Resolved but couldn't parse")
                 }
             } else if let reject = reject {
                 failure("REJECTED. Value: \(reject)")
             }
         })
+    }
+    
+    public func getAddress(path: String, success: @escaping ((String)->()), failure: @escaping ((String)->())) {
+        guard let solanaInstance = solanaInstance else { return }
+        solanaInstance.invokeMethodAsync("getAddress", withArguments: [path]) { resolve, reject in
+            if let resolve = resolve {
+                if let dict = resolve.toDictionary() as? [String: Any], let addressDict = dict["address"] as? [String: AnyObject] {
+                    let data = self.parseBuffer(dict: addressDict)
+                    let base58 = Base58.base58Encode(data)
+                    success(base58)
+                } else {
+                    failure("Resolved but couldn't parse")
+                }
+            } else if let reject = reject {
+                failure("REJECTED. Value: \(reject)")
+            }
+        }
     }
 }
 

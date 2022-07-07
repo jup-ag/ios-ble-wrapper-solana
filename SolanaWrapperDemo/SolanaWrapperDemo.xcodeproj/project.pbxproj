@@ -13,7 +13,7 @@
 		930EED882873516C0002BBF0 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 930EED862873516C0002BBF0 /* Main.storyboard */; };
 		930EED8A2873516E0002BBF0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 930EED892873516E0002BBF0 /* Assets.xcassets */; };
 		930EED8D2873516E0002BBF0 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 930EED8B2873516E0002BBF0 /* LaunchScreen.storyboard */; };
-		930EEDA528737A590002BBF0 /* SolanaWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 930EEDA428737A590002BBF0 /* SolanaWrapper */; };
+		930EEE9E287726080002BBF0 /* SolanaWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 930EEE9D287726080002BBF0 /* SolanaWrapper */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -33,7 +33,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				930EEDA528737A590002BBF0 /* SolanaWrapper in Frameworks */,
+				930EEE9E287726080002BBF0 /* SolanaWrapper in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -104,7 +104,7 @@
 			);
 			name = SolanaWrapperDemo;
 			packageProductDependencies = (
-				930EEDA428737A590002BBF0 /* SolanaWrapper */,
+				930EEE9D287726080002BBF0 /* SolanaWrapper */,
 			);
 			productName = WrapperTest;
 			productReference = 930EED7D2873516C0002BBF0 /* SolanaWrapperDemo.app */;
@@ -389,7 +389,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		930EEDA428737A590002BBF0 /* SolanaWrapper */ = {
+		930EEE9D287726080002BBF0 /* SolanaWrapper */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = SolanaWrapper;
 		};

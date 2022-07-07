@@ -10,6 +10,9 @@ import SolanaWrapper
 import BleTransport
 
 class ViewController: UIViewController {
+    
+    let DERIVATION_PATH_SOL = "44'/501'/0'"
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
@@ -19,11 +22,17 @@ class ViewController: UIViewController {
         } success: { connectedPeripheral in
             print("Connected to peripheral with name: \(connectedPeripheral.name)")
             let solana = SolanaWrapper()
-            solana.getAppConfiguration { response in
+            /*solana.getAppConfiguration { response in
+                print("Response received: \(response)")
+            } failure: { error in
+                print(error)
+            }*/
+            solana.getAddress(path: self.DERIVATION_PATH_SOL) { response in
                 print("Response received: \(response)")
             } failure: { error in
                 print(error)
             }
+
         } failure: { error in
             if let error = error {
                 print(error.description())
