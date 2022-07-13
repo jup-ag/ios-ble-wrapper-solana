@@ -27,7 +27,12 @@ class ViewController: UIViewController {
             } failure: { error in
                 print(error)
             }*/
-            solana.getAddress(path: self.DERIVATION_PATH_SOL) { response in
+            /*solana.getAddress(path: self.DERIVATION_PATH_SOL) { response in
+                print("Response received: \(response)")
+            } failure: { error in
+                print(error)
+            }*/
+            solana.signTransaction(path: self.DERIVATION_PATH_SOL, txBuffer: [1, 2, 3]) { response in
                 print("Response received: \(response)")
             } failure: { error in
                 print(error)

@@ -30,6 +30,7 @@ public class SolanaWrapper: Wrapper {
         return jsContext
     }()
     
+    var transportInstance: JSValue?
     var solanaInstance: JSValue?
     
     public override init() {
@@ -54,7 +55,8 @@ public class SolanaWrapper: Wrapper {
     fileprivate func loadInstance() {
         guard let module = jsContext.objectForKeyedSubscript("TransportModule") else { return }
         guard let transportModule = module.objectForKeyedSubscript("TransportBLEiOS") else { return }
-        guard let transportInstance = transportModule.construct(withArguments: []) else { return }
+        transportInstance = transportModule.construct(withArguments: [])
+        guard let transportInstance = transportInstance else { return }
         guard let solanaModule = module.objectForKeyedSubscript("Solana") else { return }
         solanaInstance = solanaModule.construct(withArguments: [transportInstance])
     }
@@ -85,6 +87,25 @@ public class SolanaWrapper: Wrapper {
         solanaInstance.invokeMethodAsync("getAddress", withArguments: [path]) { resolve, reject in
             if let resolve = resolve {
                 if let dict = resolve.toDictionary() as? [String: Any], let addressDict = dict["address"] as? [String: AnyObject] {
+                    let data = self.parseBuffer(dict: addressDict)
+                    let base58 = Base58.base58Encode(data)
+                    success(base58)
+                } else {
+                    failure("Resolved but couldn't parse")
+                }
+            } else if let reject = reject {
+                failure("REJECTED. Value: \(reject)")
+            }
+        }
+    }
+    
+    public func signTransaction(path: String, txBuffer: [UInt8], success: @escaping ((String)->()), failure: @escaping ((String)->())) {
+        guard let solanaInstance = solanaInstance else { return }
+        guard let transportInstance = transportInstance else { return }
+        guard let buffer = transportInstance.invokeMethod("arrayToBuffer", withArguments: [txBuffer]) else { failure("Couldn't create buffer"); return }
+        solanaInstance.invokeMethodAsync("signTransaction", withArguments: [path, buffer]) { resolve, reject in
+            if let resolve = resolve {
+                if let dict = resolve.toDictionary() as? [String: Any], let addressDict = dict["signature"] as? [String: AnyObject] {
                     let data = self.parseBuffer(dict: addressDict)
                     let base58 = Base58.base58Encode(data)
                     success(base58)
