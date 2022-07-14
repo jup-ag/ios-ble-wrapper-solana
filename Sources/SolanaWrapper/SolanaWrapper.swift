@@ -6,9 +6,10 @@
 
 import Foundation
 import JavaScriptCore
+import BleWrapper
 import Base58Swift
 
-public class SolanaWrapper: Wrapper {
+public class SolanaWrapper: BleWrapper {
     lazy var jsContext: JSContext = {
         let jsContext = JSContext()
         guard let jsContext = jsContext else { fatalError() }
