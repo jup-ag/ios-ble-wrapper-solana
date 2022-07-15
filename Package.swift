@@ -7,6 +7,7 @@ let package = Package(
     name: "SolanaWrapper",
     platforms: [
         .iOS(.v13),
+        .macOS(.v12)
     ],
     products: [
         .library(

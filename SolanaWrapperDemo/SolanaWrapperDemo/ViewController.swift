@@ -11,40 +11,61 @@ import BleTransport
 
 class ViewController: UIViewController {
     
+    @IBOutlet weak var waitingForResponseLabel: UILabel!
+    @IBOutlet weak var connectionLabel: UILabel!
+    @IBOutlet weak var getAppConfigurationButton: UIButton!
+    @IBOutlet weak var getAddressButton: UIButton!
+    
     let DERIVATION_PATH_SOL = "44'/501'/0'"
+    
+    let solana = SolanaWrapper()
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        /// `create` connects automatically to the first discovered device so have your device ready before launching this demo
-        BleTransport.shared.create {
-            print("Device disconnected")
-        } success: { connectedPeripheral in
-            print("Connected to peripheral with name: \(connectedPeripheral.name)")
-            let solana = SolanaWrapper()
-            solana.getAppConfiguration { response in
-                print("Response received: \(response)")
+        connectionLabel.text = "Connecting..."
+        
+        func connect() {
+            self.getAppConfigurationButton.isEnabled = false
+            self.getAddressButton.isEnabled = false
+            
+            BleTransport.shared.create {
+                print("Device disconnected")
+                connect()
+                self.connectionLabel.text = "Reconnecting..."
+            } success: { connectedPeripheral in
+                self.connectionLabel.text = "Connected to \(connectedPeripheral.name)"
+                print("Connected to peripheral with name: \(connectedPeripheral.name)")
+                self.getAppConfigurationButton.isEnabled = true
+                self.getAddressButton.isEnabled = true
             } failure: { error in
-                print(error)
-            }
-            /*solana.getAddress(path: self.DERIVATION_PATH_SOL) { response in
-                print("Response received: \(response)")
-            } failure: { error in
-                print(error)
-            }*/
-            /*solana.signTransaction(path: self.DERIVATION_PATH_SOL, txBuffer: [1, 2, 3]) { response in
-                print("Response received: \(response)")
-            } failure: { error in
-                print(error)
-            }*/
-        } failure: { error in
-            if let error = error {
-                print(error.description())
-            } else {
-                print("No error")
+                if let error = error {
+                    print(error.description())
+                } else {
+                    print("No error")
+                }
             }
         }
+        
+        connect()
     }
 
+    @IBAction func getAppConfigurationButtonTapped(_ sender: Any) {
+        waitingForResponseLabel.text = "Getting App Configuration..."
+        solana.getAppConfiguration { response in
+            self.waitingForResponseLabel.text = "Version: \(response.version)\nBlind Signing Enabled: \(response.blindSigningEnabled)\nPublic Key Display Mode: \(response.pubKeyDisplayMode)"
+        } failure: { error in
+            self.waitingForResponseLabel.text = "ERROR: \(error)"
+        }
+    }
+    
+    @IBAction func getAddressButtonTapped(_ sender: Any) {
+        waitingForResponseLabel.text = "Getting Address..."
+        solana.getAddress(path: DERIVATION_PATH_SOL) { response in
+            self.waitingForResponseLabel.text = "Address received: \(response)"
+        } failure: { error in
+            self.waitingForResponseLabel.text = "ERROR: \(error)"
+        }
+    }
 }
 

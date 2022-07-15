@@ -120,13 +120,13 @@ public class SolanaWrapper: BleWrapper {
     }
 }
 
-enum PubKeyDisplayMode: Int {
+public enum PubKeyDisplayMode: Int {
     case long = 0
     case short = 1
 }
 
 public struct AppConfig {
-    let blindSigningEnabled: Bool
-    let pubKeyDisplayMode: PubKeyDisplayMode
-    let version: String
+    public let blindSigningEnabled: Bool
+    public let pubKeyDisplayMode: PubKeyDisplayMode
+    public let version: String
 }

@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9306C894288084E800BA77CA /* SolanaWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 9306C893288084E800BA77CA /* SolanaWrapper */; };
 		930EED812873516C0002BBF0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 930EED802873516C0002BBF0 /* AppDelegate.swift */; };
 		930EED832873516C0002BBF0 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 930EED822873516C0002BBF0 /* SceneDelegate.swift */; };
 		930EED852873516C0002BBF0 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 930EED842873516C0002BBF0 /* ViewController.swift */; };
 		930EED882873516C0002BBF0 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 930EED862873516C0002BBF0 /* Main.storyboard */; };
 		930EED8A2873516E0002BBF0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 930EED892873516E0002BBF0 /* Assets.xcassets */; };
 		930EED8D2873516E0002BBF0 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 930EED8B2873516E0002BBF0 /* LaunchScreen.storyboard */; };
-		930EEE9E287726080002BBF0 /* SolanaWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 930EEE9D287726080002BBF0 /* SolanaWrapper */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -33,7 +33,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				930EEE9E287726080002BBF0 /* SolanaWrapper in Frameworks */,
+				9306C894288084E800BA77CA /* SolanaWrapper in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -104,7 +104,7 @@
 			);
 			name = SolanaWrapperDemo;
 			packageProductDependencies = (
-				930EEE9D287726080002BBF0 /* SolanaWrapper */,
+				9306C893288084E800BA77CA /* SolanaWrapper */,
 			);
 			productName = WrapperTest;
 			productReference = 930EED7D2873516C0002BBF0 /* SolanaWrapperDemo.app */;
@@ -389,7 +389,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		930EEE9D287726080002BBF0 /* SolanaWrapper */ = {
+		9306C893288084E800BA77CA /* SolanaWrapper */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = SolanaWrapper;
 		};
