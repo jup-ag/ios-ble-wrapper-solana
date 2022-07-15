@@ -62,26 +62,48 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xur-aV-Sho">
+                                <rect key="frame" x="20" y="811" width="135" height="31"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Open Solana app"/>
+                                <connections>
+                                    <action selector="openAppButtonTapped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="eco-QV-Mby"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="D9j-2v-AjF">
+                                <rect key="frame" x="254" y="811" width="140" height="31"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Close current app"/>
+                                <connections>
+                                    <action selector="closeAppButtonTapped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="K4s-G1-GpH"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="PK7-9r-pCv" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" constant="100" id="6jy-Hi-vsT"/>
                             <constraint firstItem="8mT-A5-v8h" firstAttribute="top" secondItem="q4y-GK-ffI" secondAttribute="bottom" constant="40" id="72T-1D-gm9"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="D9j-2v-AjF" secondAttribute="trailing" constant="20" id="974-S3-Ond"/>
                             <constraint firstItem="gg9-qH-0b3" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="60" id="SLe-9v-AE3"/>
                             <constraint firstItem="gg9-qH-0b3" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="U0k-Qc-dKs"/>
+                            <constraint firstItem="xur-aV-Sho" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="UQK-ph-vZN"/>
                             <constraint firstItem="8mT-A5-v8h" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="dgh-Ge-kZz"/>
                             <constraint firstItem="PK7-9r-pCv" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="fmJ-0A-WNf"/>
                             <constraint firstItem="q4y-GK-ffI" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="i2x-ib-P3T"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="PK7-9r-pCv" secondAttribute="trailing" constant="20" id="kW3-tx-6dm"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="xur-aV-Sho" secondAttribute="bottom" constant="20" id="ocj-no-OLP"/>
                             <constraint firstItem="q4y-GK-ffI" firstAttribute="top" secondItem="gg9-qH-0b3" secondAttribute="bottom" constant="72" id="rYj-3A-wNp"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="D9j-2v-AjF" secondAttribute="bottom" constant="20" id="uiQ-GG-Q4y"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="gg9-qH-0b3" secondAttribute="trailing" constant="20" id="urd-Jh-jGb"/>
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="closeAppButton" destination="D9j-2v-AjF" id="Cuf-j9-fQV"/>
                         <outlet property="connectionLabel" destination="gg9-qH-0b3" id="MFK-g1-W7u"/>
                         <outlet property="getAddressButton" destination="8mT-A5-v8h" id="F44-zZ-EgU"/>
                         <outlet property="getAppConfigurationButton" destination="q4y-GK-ffI" id="qhe-L7-bCV"/>
+                        <outlet property="openAppButton" destination="xur-aV-Sho" id="Jxk-fg-ILX"/>
                         <outlet property="waitingForResponseLabel" destination="PK7-9r-pCv" id="2jv-Pc-0l0"/>
                     </connections>
                 </viewController>

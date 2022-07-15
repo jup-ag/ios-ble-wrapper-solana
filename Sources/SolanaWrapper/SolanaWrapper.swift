@@ -8,8 +8,26 @@ import Foundation
 import JavaScriptCore
 import BleWrapper
 import Base58Swift
+import BleTransport
+
+public enum WrapperError: Error {
+    case genericError(description: String)
+    
+    public func description() -> String {
+        switch self {
+        case .genericError(let description):
+            return "Error: \(description)"
+        }
+    }
+}
 
 public class SolanaWrapper: BleWrapper {
+    enum Method: String {
+        case getAppConfiguration = "getAppConfiguration"
+        case getAddress = "getAddress"
+        case signTransaction = "signTransaction"
+    }
+    
     lazy var jsContext: JSContext = {
         let jsContext = JSContext()
         guard let jsContext = jsContext else { fatalError() }
@@ -62,61 +80,118 @@ public class SolanaWrapper: BleWrapper {
         solanaInstance = solanaModule.construct(withArguments: [transportInstance])
     }
     
-    public func getAppConfiguration(success: @escaping ((AppConfig)->()), failure: @escaping ((String)->())) {
-        guard let solanaInstance = solanaInstance else { failure("Instance not initialized"); return }
-        solanaInstance.invokeMethodAsync("getAppConfiguration", withArguments: [], completionHandler: { resolve, reject in
-            if let resolve = resolve {
-                if let dict = resolve.toDictionary() {
-                    guard let blindSigningEnabled = dict["blindSigningEnabled"] as? Bool else { failure("Resolved but couldn't parse"); return }
-                    guard let pubKeyDisplayModeInt = dict["pubKeyDisplayMode"] as? Int else { failure("Resolved but couldn't parse"); return }
-                    guard let version = dict["version"] as? String else { failure("Resolved but couldn't parse"); return }
-                    guard let pubKeyDisplayMode = PubKeyDisplayMode(rawValue: pubKeyDisplayModeInt) else { failure("Resolved but couldn't parse"); return }
-                    let appConfig = AppConfig(blindSigningEnabled: blindSigningEnabled, pubKeyDisplayMode: pubKeyDisplayMode, version: version)
-                    
-                    success(appConfig)
+    // MARK: - Public methods
+    public func getAppConfiguration() async throws -> AppConfig {
+        return try await withCheckedThrowingContinuation { continuation in
+            getAppConfiguration { appConfig in
+                continuation.resume(returning: appConfig)
+            } failure: { error in
+                continuation.resume(throwing: WrapperError.genericError(description: error))
+            }
+        }
+    }
+    
+    public func getAddress(path: String) async throws -> String {
+        return try await withCheckedThrowingContinuation { continuation in
+            getAddress(path: path) { response in
+                continuation.resume(returning: response)
+            } failure: { error in
+                continuation.resume(throwing: WrapperError.genericError(description: error))
+            }
+        }
+    }
+    
+    public func signTransaction(path: String, txBuffer: [UInt8]) async throws -> String {
+        return try await withCheckedThrowingContinuation { continuation in
+            signTransaction(path: path, txBuffer: txBuffer) { response in
+                continuation.resume(returning: response)
+            } failure: { error in
+                continuation.resume(throwing: WrapperError.genericError(description: error))
+            }
+        }
+    }
+    
+    public func openApp() async throws {
+        return try await withCheckedThrowingContinuation { continuation in
+            super.openApp(name: "Solana") {
+                continuation.resume()
+            } failure: { error in
+                if let error = error {
+                    continuation.resume(throwing: error)
                 } else {
-                    failure("Resolved but couldn't parse")
+                    continuation.resume(throwing: WrapperError.genericError(description: "No error"))
                 }
+            }
+        }
+    }
+    
+    public func closeApp() async throws {
+        return try await withCheckedThrowingContinuation { continuation in
+            super.closeApp() {
+                continuation.resume()
+            } failure: { error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(throwing: WrapperError.genericError(description: "No error"))
+                }
+            }
+        }
+    }
+    
+    // MARK: - Private methods
+    private func getAppConfiguration(success: @escaping ((AppConfig)->()), failure: @escaping ((String)->())) {
+        invokeMethod(.getAppConfiguration, arguments: [], success: { resolve in
+            if let dict = resolve.toDictionary() {
+                guard let blindSigningEnabled = dict["blindSigningEnabled"] as? Bool else { failure("Resolved but couldn't parse"); return }
+                guard let pubKeyDisplayModeInt = dict["pubKeyDisplayMode"] as? Int else { failure("Resolved but couldn't parse"); return }
+                guard let version = dict["version"] as? String else { failure("Resolved but couldn't parse"); return }
+                guard let pubKeyDisplayMode = PubKeyDisplayMode(rawValue: pubKeyDisplayModeInt) else { failure("Resolved but couldn't parse"); return }
+                let appConfig = AppConfig(blindSigningEnabled: blindSigningEnabled, pubKeyDisplayMode: pubKeyDisplayMode, version: version)
+                
+                success(appConfig)
+            } else {
+                failure("Resolved but couldn't parse")
+            }
+        }, failure: failure)
+    }
+    
+    private func getAddress(path: String, success: @escaping ((String)->()), failure: @escaping ((String)->())) {
+        invokeMethod(.getAddress, arguments: [path], success: { resolve in
+            if let dict = resolve.toDictionary() as? [String: Any], let addressDict = dict["address"] as? [String: AnyObject] {
+                let data = self.parseBuffer(dict: addressDict)
+                let base58 = Base58.base58Encode(data)
+                success(base58)
+            } else {
+                failure("Resolved but couldn't parse")
+            }
+        }, failure: failure)
+    }
+    
+    private func signTransaction(path: String, txBuffer: [UInt8], success: @escaping ((String)->()), failure: @escaping ((String)->())) {
+        guard let transportInstance = transportInstance else { return }
+        guard let buffer = transportInstance.invokeMethod("arrayToBuffer", withArguments: [txBuffer]) else { failure("Couldn't create buffer"); return }
+        invokeMethod(.signTransaction, arguments: [path, buffer], success: { resolve in
+            if let dict = resolve.toDictionary() as? [String: Any], let addressDict = dict["signature"] as? [String: AnyObject] {
+                let data = self.parseBuffer(dict: addressDict)
+                let base58 = Base58.base58Encode(data)
+                success(base58)
+            } else {
+                failure("Resolved but couldn't parse")
+            }
+        }, failure: failure)
+
+    }
+    
+    fileprivate func invokeMethod(_ method: Method, arguments: [Any], success: @escaping JSValueResponse, failure: @escaping StringResponse) {
+        guard let solanaInstance = solanaInstance else { failure("Instance not initialized"); return }
+        solanaInstance.invokeMethodAsync(method.rawValue, withArguments: arguments, completionHandler: { resolve, reject in
+            if let resolve = resolve {
+                success(resolve)
             } else if let reject = reject {
                 failure("REJECTED. Value: \(reject)")
             }
         })
-    }
-    
-    public func getAddress(path: String, success: @escaping ((String)->()), failure: @escaping ((String)->())) {
-        guard let solanaInstance = solanaInstance else { return }
-        solanaInstance.invokeMethodAsync("getAddress", withArguments: [path]) { resolve, reject in
-            if let resolve = resolve {
-                if let dict = resolve.toDictionary() as? [String: Any], let addressDict = dict["address"] as? [String: AnyObject] {
-                    let data = self.parseBuffer(dict: addressDict)
-                    let base58 = Base58.base58Encode(data)
-                    success(base58)
-                } else {
-                    failure("Resolved but couldn't parse")
-                }
-            } else if let reject = reject {
-                failure("REJECTED. Value: \(reject)")
-            }
-        }
-    }
-    
-    public func signTransaction(path: String, txBuffer: [UInt8], success: @escaping ((String)->()), failure: @escaping ((String)->())) {
-        guard let solanaInstance = solanaInstance else { return }
-        guard let transportInstance = transportInstance else { return }
-        guard let buffer = transportInstance.invokeMethod("arrayToBuffer", withArguments: [txBuffer]) else { failure("Couldn't create buffer"); return }
-        solanaInstance.invokeMethodAsync("signTransaction", withArguments: [path, buffer]) { resolve, reject in
-            if let resolve = resolve {
-                if let dict = resolve.toDictionary() as? [String: Any], let addressDict = dict["signature"] as? [String: AnyObject] {
-                    let data = self.parseBuffer(dict: addressDict)
-                    let base58 = Base58.base58Encode(data)
-                    success(base58)
-                } else {
-                    failure("Resolved but couldn't parse")
-                }
-            } else if let reject = reject {
-                failure("REJECTED. Value: \(reject)")
-            }
-        }
     }
 }
 
