@@ -33,11 +33,13 @@ class ViewController: UIViewController {
             self.openAppButton.isEnabled = false
             self.closeAppButton.isEnabled = false
             
-            BleTransport.shared.create {
+            BleTransport.shared.create(timeout: .seconds(10)) {
+                self.solana.bleConnected = false
                 print("Device disconnected")
                 connect()
                 self.connectionLabel.text = "Reconnecting..."
             } success: { connectedPeripheral in
+                self.solana.bleConnected = true
                 self.connectionLabel.text = "Connected to \(connectedPeripheral.name)"
                 print("Connected to peripheral with name: \(connectedPeripheral.name)")
                 self.getAppConfigurationButton.isEnabled = true
@@ -68,7 +70,6 @@ class ViewController: UIViewController {
                 }
             }
         }
-
     }
     
     @IBAction func getAddressButtonTapped(_ sender: Any) {
@@ -87,9 +88,10 @@ class ViewController: UIViewController {
     
     @IBAction func openAppButtonTapped(_ sender: Any) {
         Task() {
+            print("Will try opening Solana")
             do {
-                try await solana.openApp()
-                print("Opened app!")
+                try await solana.openAppIfNeeded()
+                print("Opened Solana!")
             } catch {
                 print("\((error as? BleTransportError)?.description() ?? "Failed with no error")")
             }

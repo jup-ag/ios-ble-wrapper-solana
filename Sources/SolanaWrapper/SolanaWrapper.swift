@@ -80,7 +80,15 @@ public class SolanaWrapper: BleWrapper {
         solanaInstance = solanaModule.construct(withArguments: [transportInstance])
     }
     
-    // MARK: - Public methods
+    // MARK: - Async methods
+    public func openApp() async throws {
+        return try await super.openApp("Solana")
+    }
+    
+    public func openAppIfNeeded() async throws {
+        return try await super.openAppIfNeeded("Solana")
+    }
+    
     public func getAppConfiguration() async throws -> AppConfig {
         return try await withCheckedThrowingContinuation { continuation in
             getAppConfiguration { appConfig in
@@ -111,36 +119,16 @@ public class SolanaWrapper: BleWrapper {
         }
     }
     
-    public func openApp() async throws {
-        return try await withCheckedThrowingContinuation { continuation in
-            super.openApp(name: "Solana") {
-                continuation.resume()
-            } failure: { error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                } else {
-                    continuation.resume(throwing: WrapperError.genericError(description: "No error"))
-                }
-            }
-        }
+    // MARK: - Completion methods
+    public func openApp(success: @escaping EmptyResponse, failure: @escaping ErrorResponse) {
+        super.openApp("Solana", success: success, failure: failure)
     }
     
-    public func closeApp() async throws {
-        return try await withCheckedThrowingContinuation { continuation in
-            super.closeApp() {
-                continuation.resume()
-            } failure: { error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                } else {
-                    continuation.resume(throwing: WrapperError.genericError(description: "No error"))
-                }
-            }
-        }
+    public func openAppIfNeeded(completion: @escaping (Result<Void, BleTransportError>) -> Void) {
+        super.openAppIfNeeded("Solana", completion: completion)
     }
     
-    // MARK: - Private methods
-    private func getAppConfiguration(success: @escaping ((AppConfig)->()), failure: @escaping ((String)->())) {
+    public func getAppConfiguration(success: @escaping ((AppConfig)->()), failure: @escaping ((String)->())) {
         invokeMethod(.getAppConfiguration, arguments: [], success: { resolve in
             if let dict = resolve.toDictionary() {
                 guard let blindSigningEnabled = dict["blindSigningEnabled"] as? Bool else { failure("Resolved but couldn't parse"); return }
@@ -156,7 +144,7 @@ public class SolanaWrapper: BleWrapper {
         }, failure: failure)
     }
     
-    private func getAddress(path: String, success: @escaping ((String)->()), failure: @escaping ((String)->())) {
+    public func getAddress(path: String, success: @escaping ((String)->()), failure: @escaping ((String)->())) {
         invokeMethod(.getAddress, arguments: [path], success: { resolve in
             if let dict = resolve.toDictionary() as? [String: Any], let addressDict = dict["address"] as? [String: AnyObject] {
                 let data = self.parseBuffer(dict: addressDict)
@@ -168,7 +156,7 @@ public class SolanaWrapper: BleWrapper {
         }, failure: failure)
     }
     
-    private func signTransaction(path: String, txBuffer: [UInt8], success: @escaping ((String)->()), failure: @escaping ((String)->())) {
+    public func signTransaction(path: String, txBuffer: [UInt8], success: @escaping ((String)->()), failure: @escaping ((String)->())) {
         guard let transportInstance = transportInstance else { return }
         guard let buffer = transportInstance.invokeMethod("arrayToBuffer", withArguments: [txBuffer]) else { failure("Couldn't create buffer"); return }
         invokeMethod(.signTransaction, arguments: [path, buffer], success: { resolve in
@@ -183,6 +171,7 @@ public class SolanaWrapper: BleWrapper {
 
     }
     
+    // MARK: - Private methods
     fileprivate func invokeMethod(_ method: Method, arguments: [Any], success: @escaping JSValueResponse, failure: @escaping StringResponse) {
         guard let solanaInstance = solanaInstance else { failure("Instance not initialized"); return }
         solanaInstance.invokeMethodAsync(method.rawValue, withArguments: arguments, completionHandler: { resolve, reject in
