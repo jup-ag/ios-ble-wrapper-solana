@@ -8,6 +8,7 @@
 import UIKit
 import SolanaWrapper
 import BleTransport
+import BleWrapper
 
 class ViewController: UIViewController {
     
@@ -27,35 +28,28 @@ class ViewController: UIViewController {
         
         connectionLabel.text = "Connecting..."
         
-        func connect() {
-            self.getAppConfigurationButton.isEnabled = false
-            self.getAddressButton.isEnabled = false
-            self.openAppButton.isEnabled = false
-            self.closeAppButton.isEnabled = false
-            
-            BleTransport.shared.create(timeout: .seconds(10)) {
-                self.solana.bleConnected = false
-                print("Device disconnected")
-                connect()
-                self.connectionLabel.text = "Reconnecting..."
-            } success: { connectedPeripheral in
-                self.solana.bleConnected = true
-                self.connectionLabel.text = "Connected to \(connectedPeripheral.name)"
-                print("Connected to peripheral with name: \(connectedPeripheral.name)")
-                self.getAppConfigurationButton.isEnabled = true
-                self.getAddressButton.isEnabled = true
-                self.openAppButton.isEnabled = true
-                self.closeAppButton.isEnabled = true
-            } failure: { error in
-                if let error = error {
-                    print(error.description())
-                } else {
-                    print("No error")
-                }
-            }
-        }
+        create(success: nil, failure: nil)
+    }
+    
+    func create(success: EmptyResponse?, failure: ErrorResponse?) {
+        self.getAppConfigurationButton.isEnabled = false
+        self.getAddressButton.isEnabled = false
+        self.openAppButton.isEnabled = false
+        self.closeAppButton.isEnabled = false
         
-        connect()
+        BleTransport.shared.create(timeout: .seconds(10)) {
+            print("Device disconnected")
+        } success: { connectedPeripheral in
+            self.connectionLabel.text = "Connected to \(connectedPeripheral.name)"
+            print("Connected to peripheral with name: \(connectedPeripheral.name)")
+            self.getAppConfigurationButton.isEnabled = true
+            self.getAddressButton.isEnabled = true
+            self.openAppButton.isEnabled = true
+            self.closeAppButton.isEnabled = true
+            success?()
+        } failure: { error in
+            failure?(error)
+        }
     }
 
     @IBAction func getAppConfigurationButtonTapped(_ sender: Any) {
@@ -93,7 +87,14 @@ class ViewController: UIViewController {
                 try await solana.openAppIfNeeded()
                 print("Opened Solana!")
             } catch {
-                print("\((error as? BleTransportError)?.description() ?? "Failed with no error")")
+                if let error = error as? BleStatusError {
+                    if error == .userRejected {
+                        let alert = UIAlertController(title: "User Rejected", message: "User rejected opening the app", preferredStyle: .alert)
+                        let okAction = UIAlertAction(title: "Ok", style: .cancel, handler: nil)
+                        alert.addAction(okAction)
+                        self.present(alert, animated: true, completion: nil)
+                    }
+                }
             }
         }
     }
@@ -104,7 +105,7 @@ class ViewController: UIViewController {
                 try await solana.closeApp()
                 print("Closed app!")
             } catch {
-                print("\((error as? BleTransportError)?.description() ?? "Failed with no error")")
+                print(error)
             }
         }
     }

@@ -80,51 +80,7 @@ public class SolanaWrapper: BleWrapper {
         solanaInstance = solanaModule.construct(withArguments: [transportInstance])
     }
     
-    // MARK: - Async methods
-    public func openApp() async throws {
-        return try await super.openApp("Solana")
-    }
-    
-    public func openAppIfNeeded() async throws {
-        return try await super.openAppIfNeeded("Solana")
-    }
-    
-    public func getAppConfiguration() async throws -> AppConfig {
-        return try await withCheckedThrowingContinuation { continuation in
-            getAppConfiguration { appConfig in
-                continuation.resume(returning: appConfig)
-            } failure: { error in
-                continuation.resume(throwing: WrapperError.genericError(description: error))
-            }
-        }
-    }
-    
-    public func getAddress(path: String) async throws -> String {
-        return try await withCheckedThrowingContinuation { continuation in
-            getAddress(path: path) { response in
-                continuation.resume(returning: response)
-            } failure: { error in
-                continuation.resume(throwing: WrapperError.genericError(description: error))
-            }
-        }
-    }
-    
-    public func signTransaction(path: String, txBuffer: [UInt8]) async throws -> String {
-        return try await withCheckedThrowingContinuation { continuation in
-            signTransaction(path: path, txBuffer: txBuffer) { response in
-                continuation.resume(returning: response)
-            } failure: { error in
-                continuation.resume(throwing: WrapperError.genericError(description: error))
-            }
-        }
-    }
-    
-    // MARK: - Completion methods
-    public func openApp(success: @escaping EmptyResponse, failure: @escaping ErrorResponse) {
-        super.openApp("Solana", success: success, failure: failure)
-    }
-    
-    public func openAppIfNeeded(completion: @escaping (Result<Void, BleTransportError>) -> Void) {
+    public func openAppIfNeeded(completion: @escaping (Result<Void, Error>) -> Void) {
         super.openAppIfNeeded("Solana", completion: completion)
     }
     
@@ -181,6 +137,43 @@ public class SolanaWrapper: BleWrapper {
                 failure("REJECTED. Value: \(reject)")
             }
         })
+    }
+}
+
+/// Async implementations
+extension SolanaWrapper {
+    public func openAppIfNeeded() async throws {
+        return try await super.openAppIfNeeded("Solana")
+    }
+    
+    public func getAppConfiguration() async throws -> AppConfig {
+        return try await withCheckedThrowingContinuation { continuation in
+            getAppConfiguration { appConfig in
+                continuation.resume(returning: appConfig)
+            } failure: { error in
+                continuation.resume(throwing: WrapperError.genericError(description: error))
+            }
+        }
+    }
+    
+    public func getAddress(path: String) async throws -> String {
+        return try await withCheckedThrowingContinuation { continuation in
+            getAddress(path: path) { response in
+                continuation.resume(returning: response)
+            } failure: { error in
+                continuation.resume(throwing: WrapperError.genericError(description: error))
+            }
+        }
+    }
+    
+    public func signTransaction(path: String, txBuffer: [UInt8]) async throws -> String {
+        return try await withCheckedThrowingContinuation { continuation in
+            signTransaction(path: path, txBuffer: txBuffer) { response in
+                continuation.resume(returning: response)
+            } failure: { error in
+                continuation.resume(throwing: WrapperError.genericError(description: error))
+            }
+        }
     }
 }
 
