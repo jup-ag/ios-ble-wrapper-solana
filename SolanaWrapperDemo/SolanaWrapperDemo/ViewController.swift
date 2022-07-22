@@ -17,7 +17,6 @@ class ViewController: UIViewController {
     @IBOutlet weak var getAppConfigurationButton: UIButton!
     @IBOutlet weak var getAddressButton: UIButton!
     @IBOutlet weak var openAppButton: UIButton!
-    @IBOutlet weak var closeAppButton: UIButton!
     
     let DERIVATION_PATH_SOL = "44'/501'/0'"
     
@@ -35,7 +34,6 @@ class ViewController: UIViewController {
         self.getAppConfigurationButton.isEnabled = false
         self.getAddressButton.isEnabled = false
         self.openAppButton.isEnabled = false
-        self.closeAppButton.isEnabled = false
         
         BleTransport.shared.create(timeout: .seconds(10)) {
             print("Device disconnected")
@@ -45,7 +43,6 @@ class ViewController: UIViewController {
             self.getAppConfigurationButton.isEnabled = true
             self.getAddressButton.isEnabled = true
             self.openAppButton.isEnabled = true
-            self.closeAppButton.isEnabled = true
             success?()
         } failure: { error in
             failure?(error)
@@ -95,17 +92,6 @@ class ViewController: UIViewController {
                         self.present(alert, animated: true, completion: nil)
                     }
                 }
-            }
-        }
-    }
-    
-    @IBAction func closeAppButtonTapped(_ sender: Any) {
-        Task() {
-            do {
-                try await solana.closeApp()
-                print("Closed app!")
-            } catch {
-                print(error)
             }
         }
     }
