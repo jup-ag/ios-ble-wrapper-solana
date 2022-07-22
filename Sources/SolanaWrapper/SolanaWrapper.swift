@@ -84,57 +84,58 @@ public class SolanaWrapper: BleWrapper {
         super.openAppIfNeeded("Solana", completion: completion)
     }
     
-    public func getAppConfiguration(success: @escaping ((AppConfig)->()), failure: @escaping ((String)->())) {
+    public func getAppConfiguration(success: @escaping ((AppConfig)->()), failure: @escaping ErrorResponse) {
         invokeMethod(.getAppConfiguration, arguments: [], success: { resolve in
             if let dict = resolve.toDictionary() {
-                guard let blindSigningEnabled = dict["blindSigningEnabled"] as? Bool else { failure("Resolved but couldn't parse"); return }
-                guard let pubKeyDisplayModeInt = dict["pubKeyDisplayMode"] as? Int else { failure("Resolved but couldn't parse"); return }
-                guard let version = dict["version"] as? String else { failure("Resolved but couldn't parse"); return }
-                guard let pubKeyDisplayMode = PubKeyDisplayMode(rawValue: pubKeyDisplayModeInt) else { failure("Resolved but couldn't parse"); return }
+                guard let blindSigningEnabled = dict["blindSigningEnabled"] as? Bool else { failure(BleTransportError.lowerLevelError(description: "getAppConfiguration -> resolved but couldn't parse")); return }
+                guard let pubKeyDisplayModeInt = dict["pubKeyDisplayMode"] as? Int else { failure(BleTransportError.lowerLevelError(description: "getAppConfiguration -> resolved but couldn't parse")); return }
+                guard let version = dict["version"] as? String else { failure(BleTransportError.lowerLevelError(description: "getAppConfiguration -> resolved but couldn't parse")); return }
+                guard let pubKeyDisplayMode = PubKeyDisplayMode(rawValue: pubKeyDisplayModeInt) else { failure(BleTransportError.lowerLevelError(description: "getAppConfiguration -> resolved but couldn't parse")); return }
                 let appConfig = AppConfig(blindSigningEnabled: blindSigningEnabled, pubKeyDisplayMode: pubKeyDisplayMode, version: version)
                 
                 success(appConfig)
             } else {
-                failure("Resolved but couldn't parse")
+                failure(BleTransportError.lowerLevelError(description: "getAppConfiguration -> resolved but couldn't parse"))
             }
         }, failure: failure)
     }
     
-    public func getAddress(path: String, success: @escaping ((String)->()), failure: @escaping ((String)->())) {
+    public func getAddress(path: String, success: @escaping StringResponse, failure: @escaping ErrorResponse) {
         invokeMethod(.getAddress, arguments: [path], success: { resolve in
             if let dict = resolve.toDictionary() as? [String: Any], let addressDict = dict["address"] as? [String: AnyObject] {
                 let data = self.parseBuffer(dict: addressDict)
                 let base58 = Base58.base58Encode(data)
                 success(base58)
             } else {
-                failure("Resolved but couldn't parse")
+                failure(BleTransportError.lowerLevelError(description: "getAddress -> resolved but couldn't parse"))
             }
         }, failure: failure)
     }
     
-    public func signTransaction(path: String, txBuffer: [UInt8], success: @escaping ((String)->()), failure: @escaping ((String)->())) {
+    public func signTransaction(path: String, txBuffer: [UInt8], success: @escaping StringResponse, failure: @escaping ErrorResponse) {
         guard let transportInstance = transportInstance else { return }
-        guard let buffer = transportInstance.invokeMethod("arrayToBuffer", withArguments: [txBuffer]) else { failure("Couldn't create buffer"); return }
+        guard let buffer = transportInstance.invokeMethod("arrayToBuffer", withArguments: [txBuffer]) else { failure(BleTransportError.lowerLevelError(description: "signTransaction -> Couldn't create buffer")); return }
         invokeMethod(.signTransaction, arguments: [path, buffer], success: { resolve in
             if let dict = resolve.toDictionary() as? [String: Any], let addressDict = dict["signature"] as? [String: AnyObject] {
                 let data = self.parseBuffer(dict: addressDict)
                 let base58 = Base58.base58Encode(data)
                 success(base58)
             } else {
-                failure("Resolved but couldn't parse")
+                failure(BleTransportError.lowerLevelError(description: "signTransaction -> resolved but couldn't parse"))
             }
         }, failure: failure)
 
     }
     
     // MARK: - Private methods
-    fileprivate func invokeMethod(_ method: Method, arguments: [Any], success: @escaping JSValueResponse, failure: @escaping StringResponse) {
-        guard let solanaInstance = solanaInstance else { failure("Instance not initialized"); return }
-        solanaInstance.invokeMethodAsync(method.rawValue, withArguments: arguments, completionHandler: { resolve, reject in
+    fileprivate func invokeMethod(_ method: Method, arguments: [Any], success: @escaping JSValueResponse, failure: @escaping ErrorResponse) {
+        guard let solanaInstance = solanaInstance else { failure(BleTransportError.lowerLevelError(description: "invokeMethod -> instance not initialized")); return }
+        solanaInstance.invokeMethodAsync(method.rawValue, withArguments: arguments, completionHandler: { [weak self] resolve, reject in
+            guard let self = self else { failure(BleTransportError.lowerLevelError(description: "invokeMethod -> self is nil")); return }
             if let resolve = resolve {
                 success(resolve)
             } else if let reject = reject {
-                failure("REJECTED. Value: \(reject)")
+                failure(self.jsValueAsError(reject))
             }
         })
     }
@@ -151,7 +152,7 @@ extension SolanaWrapper {
             getAppConfiguration { appConfig in
                 continuation.resume(returning: appConfig)
             } failure: { error in
-                continuation.resume(throwing: WrapperError.genericError(description: error))
+                continuation.resume(throwing: error)
             }
         }
     }
@@ -161,7 +162,7 @@ extension SolanaWrapper {
             getAddress(path: path) { response in
                 continuation.resume(returning: response)
             } failure: { error in
-                continuation.resume(throwing: WrapperError.genericError(description: error))
+                continuation.resume(throwing: error)
             }
         }
     }
@@ -171,7 +172,7 @@ extension SolanaWrapper {
             signTransaction(path: path, txBuffer: txBuffer) { response in
                 continuation.resume(returning: response)
             } failure: { error in
-                continuation.resume(throwing: WrapperError.genericError(description: error))
+                continuation.resume(throwing: error)
             }
         }
     }
