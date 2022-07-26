@@ -35,7 +35,7 @@ class ViewController: UIViewController {
         self.getAddressButton.isEnabled = false
         self.openAppButton.isEnabled = false
         
-        BleTransport.shared.create(timeout: .seconds(10)) {
+        /*BleTransport.shared.create(timeout: .seconds(10)) {
             print("Device disconnected")
         } success: { connectedPeripheral in
             self.connectionLabel.text = "Connected to \(connectedPeripheral.name)"
@@ -46,6 +46,17 @@ class ViewController: UIViewController {
             success?()
         } failure: { error in
             failure?(error)
+        }*/
+        
+        Task() {
+            do {
+                let deviceConnected = try await BleTransport.shared.create(scanDuration: 2.0, disconnectedCallback: {
+                    print("Device disconnected")
+                })
+                print(deviceConnected.name)
+            } catch {
+                print(error)
+            }
         }
     }
 
