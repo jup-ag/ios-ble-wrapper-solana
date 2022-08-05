@@ -33,7 +33,7 @@
       "location" : "https://github.com/LedgerHQ/hw-transport-ios-ble",
       "state" : {
         "branch" : "main",
-        "revision" : "86b6cfb033f78bc213e9de3a184437873fd1c2a1"
+        "revision" : "d75ea41e910f44d824642c66267c38806a015868"
       }
     },
     {
@@ -42,7 +42,7 @@
       "location" : "https://github.com/LedgerHQ/ios-ble-wrapper",
       "state" : {
         "branch" : "main",
-        "revision" : "f6102c5ea12eeb2e2ba6e83ea2e8382f52e8a0b0"
+        "revision" : "cd6f0e8a10d7d600fc33b38f83b882d57f0170a0"
       }
     }
   ],

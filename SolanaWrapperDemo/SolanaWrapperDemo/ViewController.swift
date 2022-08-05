@@ -27,10 +27,10 @@ class ViewController: UIViewController {
         
         connectionLabel.text = "Connecting..."
         
-        create(success: nil, failure: nil)
+        create()
     }
     
-    func create(success: EmptyResponse?, failure: ErrorResponse?) {
+    func create() {
         self.getAppConfigurationButton.isEnabled = false
         self.getAddressButton.isEnabled = false
         self.openAppButton.isEnabled = false
@@ -53,9 +53,13 @@ class ViewController: UIViewController {
                 let deviceConnected = try await BleTransport.shared.create(scanDuration: 2.0, disconnectedCallback: {
                     print("Device disconnected")
                 })
-                print(deviceConnected.name)
+                self.connectionLabel.text = "Connected to \(deviceConnected.name)"
+                print("Connected to device with name: \(deviceConnected.name)")
+                self.getAppConfigurationButton.isEnabled = true
+                self.getAddressButton.isEnabled = true
+                self.openAppButton.isEnabled = true
             } catch {
-                print(error)
+                print(BridgeError.fromError(error))
             }
         }
     }
@@ -67,9 +71,7 @@ class ViewController: UIViewController {
                 let appConfig = try await solana.getAppConfiguration()
                 self.waitingForResponseLabel.text = "Version: \(appConfig.version)\nBlind Signing Enabled: \(appConfig.blindSigningEnabled)\nPublic Key Display Mode: \(appConfig.pubKeyDisplayMode)"
             } catch {
-                if let error = error as? WrapperError {
-                    self.waitingForResponseLabel.text = error.description()
-                }
+                self.waitingForResponseLabel.text = error.localizedDescription
             }
         }
     }
@@ -81,9 +83,7 @@ class ViewController: UIViewController {
                 let address = try await solana.getAddress(path: DERIVATION_PATH_SOL)
                 self.waitingForResponseLabel.text = "Address received: \(address)"
             } catch {
-                if let error = error as? WrapperError {
-                    self.waitingForResponseLabel.text = error.description()
-                }
+                self.waitingForResponseLabel.text = error.localizedDescription
             }
         }
     }
@@ -95,8 +95,10 @@ class ViewController: UIViewController {
                 try await solana.openAppIfNeeded()
                 print("Opened Solana!")
             } catch {
+                print(BridgeError.fromError(error))
+                
                 if let error = error as? BleStatusError {
-                    if error == .userRejected {
+                    if case .userRejected = error {
                         let alert = UIAlertController(title: "User Rejected", message: "User rejected opening the app", preferredStyle: .alert)
                         let okAction = UIAlertAction(title: "Ok", style: .cancel, handler: nil)
                         alert.addAction(okAction)

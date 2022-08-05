@@ -10,17 +10,6 @@ import BleWrapper
 import Base58Swift
 import BleTransport
 
-public enum WrapperError: Error {
-    case genericError(description: String)
-    
-    public func description() -> String {
-        switch self {
-        case .genericError(let description):
-            return "Error: \(description)"
-        }
-    }
-}
-
 public class SolanaWrapper: BleWrapper {
     enum Method: String {
         case getAppConfiguration = "getAppConfiguration"
