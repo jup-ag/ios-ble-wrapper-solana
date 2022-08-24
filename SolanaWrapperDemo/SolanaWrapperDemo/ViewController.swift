@@ -50,7 +50,7 @@ class ViewController: UIViewController {
         
         Task() {
             do {
-                let deviceConnected = try await BleTransport.shared.create(scanDuration: 2.0, disconnectedCallback: {
+                let deviceConnected = try await BleTransport.shared.create(scanDuration: 5.0, disconnectedCallback: {
                     print("Device disconnected")
                 })
                 self.connectionLabel.text = "Connected to \(deviceConnected.name)"
@@ -95,7 +95,7 @@ class ViewController: UIViewController {
                 try await solana.openAppIfNeeded()
                 print("Opened Solana!")
             } catch {
-                print(BridgeError.fromError(error))
+                print(error)
                 
                 if let error = error as? BleStatusError {
                     if case .userRejected = error {
@@ -107,6 +107,34 @@ class ViewController: UIViewController {
                 }
             }
         }
+        /*solana.openAppIfNeeded { result in
+            switch result {
+            case .success(_):
+                print("FIRST OPENED!")
+            case .failure(let error):
+                print("FIRST \(error)")
+            }
+        }*/
+        /*DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+            print("Fired second")
+            self.solana.openAppIfNeeded { result in
+                switch result {
+                case .success(_):
+                    print("SECOND OPENED!")
+                case .failure(let error):
+                    print("SECOND \(error)")
+                }
+            }
+        }*/
+        
+        /*solana.openAppIfNeeded("Ethereum") { result in
+            switch result {
+            case .success(_):
+                print("SECOND OPENED!")
+            case .failure(let error):
+                print("SECOND \(error)")
+            }
+        }*/
     }
 }
 
