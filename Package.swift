@@ -15,7 +15,7 @@ let package = Package(
             targets: ["SolanaWrapper"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/LedgerHQ/ios-ble-wrapper", branch: "CoreBluetooth"),
+        .package(url: "https://github.com/LedgerHQ/ios-ble-wrapper", exact: "1.0.0"),
         .package(url: "https://github.com/keefertaylor/Base58Swift.git", from: "2.1.0"),
     ],
     targets: [
