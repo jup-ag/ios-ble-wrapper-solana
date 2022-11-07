@@ -1,12 +1,21 @@
 {
   "pins" : [
     {
-      "identity" : "bluejay",
+      "identity" : "base58swift",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/DantePuglisi/bluejay",
+      "location" : "https://github.com/keefertaylor/Base58Swift.git",
       "state" : {
-        "branch" : "fail-when-wrong-characteristic-property",
-        "revision" : "ceba79e911449d7ab29aa234d749962befbc9d16"
+        "revision" : "1c13ea6b07f1584660526f8bde3d4cc150e91acd",
+        "version" : "2.1.14"
+      }
+    },
+    {
+      "identity" : "bigint",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/attaswift/BigInt.git",
+      "state" : {
+        "revision" : "0ed110f7555c34ff468e72e1686e59721f2b0da6",
+        "version" : "5.3.0"
       }
     },
     {
@@ -14,8 +23,17 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/LedgerHQ/hw-transport-ios-ble",
       "state" : {
-        "branch" : "main",
-        "revision" : "feba51052259c5811ca4b6ac135cbe613a6bb00d"
+        "revision" : "4df8fff21c1738a1dff4d2ee19175dd3263d6c5f",
+        "version" : "1.0.1"
+      }
+    },
+    {
+      "identity" : "ios-ble-wrapper",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/LedgerHQ/ios-ble-wrapper",
+      "state" : {
+        "revision" : "39ee35508caf3408416eec8a566008c4532d1640",
+        "version" : "1.0.1"
       }
     }
   ],
