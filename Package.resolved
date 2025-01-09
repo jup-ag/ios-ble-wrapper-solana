@@ -21,19 +21,19 @@
     {
       "identity" : "hw-transport-ios-ble",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/LedgerHQ/hw-transport-ios-ble",
+      "location" : "https://github.com/tonkeeper/hw-transport-ios-ble",
       "state" : {
-        "revision" : "4df8fff21c1738a1dff4d2ee19175dd3263d6c5f",
-        "version" : "1.0.1"
+        "revision" : "cd0860cc94226da93cc078f45d9d6331f5cf26b5",
+        "version" : "2.0.0"
       }
     },
     {
       "identity" : "ios-ble-wrapper",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/LedgerHQ/ios-ble-wrapper",
+      "location" : "https://github.com/jup-ag/ios-ble-wrapper",
       "state" : {
         "branch" : "main",
-        "revision" : "39ee35508caf3408416eec8a566008c4532d1640"
+        "revision" : "bf348b696d2afde5e25a5424424a9255c5cbfe5f"
       }
     }
   ],
